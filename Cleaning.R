@@ -1,4 +1,9 @@
 library(tidyverse)
+library(dplyr)
+library(tidyr)
+library(hash)
+# Load workspace back to RStudio
+load("/Users/mrfxde/342_Data_Science/data.RData")
 
 #school computer
 setwd("C:/Users/derasrodriguezc/OneDrive - Eastern Connecticut State University/23-24/Fall/MAT 342")
@@ -7,7 +12,7 @@ setwd("C:/Users/derasrodriguezc/OneDrive - Eastern Connecticut State University/
 setwd("/Users/christianderas/Library/CloudStorage/OneDrive-EasternConnecticutStateUniversity/23-24/Fall/MAT 342")
 
 #data as of 12/31/2022
-raw <- read.csv("Motor_Vehicle_Collisions_-_Crashes.csv")
+raw <- read.csv("/Users/mrfxde/Desktop/Data\ Science/Projects/Motor_Vehicle_Collisions_-_Crashes.csv")
 
 #Factor Categories
 Driver_Factors <- c(
@@ -61,6 +66,7 @@ clean <- clean %>%
 
 #categorize
 clean2 <- clean
+View(table(clean2$CONTRIBUTING.FACTOR.VEHICLE.1))
 
 for (i in 1:dim(clean2[1])) {
   if (clean2$CONTRIBUTING.FACTOR.VEHICLE.1[i] %in% Driver_Factors == TRUE) {
@@ -77,21 +83,29 @@ for (i in 1:dim(clean2[1])) {
   }
 }
 
-cleantable <- table(clean$CONTRIBUTING.FACTOR.VEHICLE.1, clean$Injured) + table(clean$CONTRIBUTING.FACTOR.VEHICLE.2, clean$Injured)
-index[index == "Illness"] <- "driver"
-index[index == "Outside Car Distraction"] <- "environmental"
-index[index == "Passing or Lane Usage Improper"] <- "road"
-index[index == "Traffic Control Device Improper/Non-Working"] <- "driver"
-
-
 clean2[1] <- index
+# gets rid of NA values form Injured and Killed
+clean1 <- read.csv("clean.csv") %>% drop_na(Injured,Killed)
 
-clean2 <- clean %>% 
-  group_by(CONTRIBUTING.FACTOR.VEHICLE.1, Injured) %>% 
-  summarise(count = n()) %>% 
-  spread(Injured, count) %>% 
-  select(-`<NA>`) 
+# Groups by variable, then shows count of yes, no
+clean2 <- clean1 %>% 
+  group_by(CONTRIBUTING.FACTOR.VEHICLE.1, Injured, Killed) %>% 
+  summarise(count = n()) #%>% 
+  #spread(Injured, count) %>% 
+  #select(-`<NA>`) 
+View(table(clean2))
 
-library(usethis)
-use_git_config(user.name = "c-deras", user.email = "coderasr@gmail.com")
+# QUESTIONS
+# 
+# 1. Create (1) an overlaid histogram of each numeric variable where the categorical target variable is the overlay, and 
+# (2) a normalized version of the histogram.  
+# Discuss any trends in the numeric variable iteself as well as trends in the target variable as the numeric variable increases.
+# 
+# 2. Create (1) an overlaid bar chart of each categoric variable.  
+# For each non-target variable, make the bar chart have an overlay of the categorical target variable.  
+# Also create (2) a normalized version of the bar chart, if an overlay was used.  Discuss any trends in the target variable itself,
+# in each other categorical variable, and trends in the target variable as the categorical variables change.
+rm(h.Driver_Factors,h.Road_Factors,h.Tech_Factors,h.Vehicle_Factors)
+#use the save.image function to save all these data to a working directory on our computer:
+save.image("/Users/mrfxde/342_Data_Science/data.RData")
 
