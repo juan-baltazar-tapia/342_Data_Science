@@ -54,44 +54,55 @@ clean$CONTRIBUTING.FACTOR.VEHICLE.5[clean$CONTRIBUTING.FACTOR.VEHICLE.5 == 1] <-
 clean <- clean %>% 
   select(NUMBER.OF.PERSONS.INJURED, NUMBER.OF.PERSONS.KILLED, CONTRIBUTING.FACTOR.VEHICLE.1, CONTRIBUTING.FACTOR.VEHICLE.2,
          CONTRIBUTING.FACTOR.VEHICLE.3, CONTRIBUTING.FACTOR.VEHICLE.4, CONTRIBUTING.FACTOR.VEHICLE.5) %>% 
-  drop_na(CONTRIBUTING.FACTOR.VEHICLE.1) %>% 
+  drop_na(CONTRIBUTING.FACTOR.VEHICLE.1, NUMBER.OF.PERSONS.INJURED, NUMBER.OF.PERSONS.KILLED) %>% 
   mutate(Injured = ifelse(NUMBER.OF.PERSONS.INJURED > 0, "Yes", "No")) %>% 
   mutate(Killed = ifelse(NUMBER.OF.PERSONS.KILLED > 0, "Yes", "No")) %>% 
   select(-c(NUMBER.OF.PERSONS.INJURED, NUMBER.OF.PERSONS.KILLED))
 
 #categorize
 clean2 <- clean
+index <- clean2[1]
 
-for (i in 1:dim(clean2[1])) {
-  if (clean2$CONTRIBUTING.FACTOR.VEHICLE.1[i] %in% Driver_Factors == TRUE) {
-    clean2$CONTRIBUTING.FACTOR.VEHICLE.1[i] <-  "driver" 
-  } else if (clean2$CONTRIBUTING.FACTOR.VEHICLE.1[i] %in% Environmental_Factors == TRUE) {
-    clean2$CONTRIBUTING.FACTOR.VEHICLE.1[i] <- "environmental"
-  } else if (clean2$CONTRIBUTING.FACTOR.VEHICLE.1[i] %in% Road_Factors == TRUE) {
-    clean2$CONTRIBUTING.FACTOR.VEHICLE.1[i] <- "road"
-  }else if (clean2$CONTRIBUTING.FACTOR.VEHICLE.1[i] %in% Tech_Factors == TRUE) {
-    clean2$CONTRIBUTING.FACTOR.VEHICLE.1[i] <- "tech"
-  } else if (clean2$CONTRIBUTING.FACTOR.VEHICLE.1[i] %in% Vehicle_Factors == TRUE) {
-    clean2$CONTRIBUTING.FACTOR.VEHICLE.1[i] <- "vehicle"
-  } else {
-  }
+for (i in 1:dim(index)) {
+  if (clean2[1][i] %in% Driver_Factors == TRUE) {
+    index[i] <-  "driver" 
+  } else if (clean2[1][i] %in% Environmental_Factors == TRUE) {
+    index[i] <- "environmental"
+  } else if (clean2[1][i] %in% Road_Factors == TRUE) {
+    index[i] <- "road"
+  }else if (clean2[1][i] %in% Tech_Factors == TRUE) {
+    index[i] <- "tech"
+  } else if (clean2[1][i] %in% Vehicle_Factors == TRUE) {
+    index[i] <- "vehicle"
+  } else {}
 }
 
-cleantable <- table(clean$CONTRIBUTING.FACTOR.VEHICLE.1, clean$Injured) + table(clean$CONTRIBUTING.FACTOR.VEHICLE.2, clean$Injured)
-index[index == "Illness"] <- "driver"
-index[index == "Outside Car Distraction"] <- "environmental"
-index[index == "Passing or Lane Usage Improper"] <- "road"
-index[index == "Traffic Control Device Improper/Non-Working"] <- "driver"
+clean1 <- read.csv("clean.csv") %>% 
+  drop_na(Injured, Killed) %>% 
+  select(-X) %>% 
+  mutate(result = ifelse(Injured == "No" & Killed == "No", "No one hurt", "Someone Hurt"))
 
+ggplot(clean1, aes(CONTRIBUTING.FACTOR.VEHICLE.1)) + geom_bar(aes(fill = result ), position = "fill")
 
-clean2[1] <- index
+Combined_Table <- clean1 %>% 
+  group_by(CONTRIBUTING.FACTOR.VEHICLE.1, Injured, Killed) %>% 
+  summarise(Count = n())
 
-clean2 <- clean %>% 
+Killed_Table <- clean1 %>% 
+  select(CONTRIBUTING.FACTOR.VEHICLE.1, Killed) %>% 
+  group_by(CONTRIBUTING.FACTOR.VEHICLE.1, Killed) %>% 
+  summarize(Count = n()) %>% 
+  spread(Killed, Count)
+
+Injured_Table <- clean1 %>% 
+  select(CONTRIBUTING.FACTOR.VEHICLE.1, Injured) %>% 
   group_by(CONTRIBUTING.FACTOR.VEHICLE.1, Injured) %>% 
-  summarise(count = n()) %>% 
-  spread(Injured, count) %>% 
-  select(-`<NA>`) 
+  summarize(Count = n()) %>% 
+  spread(Injured, Count)
 
-library(usethis)
-use_git_config(user.name = "c-deras", user.email = "coderasr@gmail.com")
+ggplot(clean1, aes(CONTRIBUTING.FACTOR.VEHICLE.1)) + geom_bar(aes(fill = result ), position = "fill")
+
+
+#library(usethis)
+#use_git_config(user.name = "c-deras", user.email = "coderasr@gmail.com")
 
