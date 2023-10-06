@@ -54,15 +54,12 @@ clean$CONTRIBUTING.FACTOR.VEHICLE.5[clean$CONTRIBUTING.FACTOR.VEHICLE.5 == 1] <-
 clean1 <- clean %>% 
   select(CONTRIBUTING.FACTOR.VEHICLE.1, CONTRIBUTING.FACTOR.VEHICLE.2, CONTRIBUTING.FACTOR.VEHICLE.3, 
          CONTRIBUTING.FACTOR.VEHICLE.4, CONTRIBUTING.FACTOR.VEHICLE.5, NUMBER.OF.PERSONS.INJURED, NUMBER.OF.PERSONS.KILLED) %>% 
-  drop_na(CONTRIBUTING.FACTOR.VEHICLE.1, NUMBER.OF.PERSONS.INJURED, NUMBER.OF.PERSONS.KILLED) #%>% 
-  #mutate(Injured = ifelse(NUMBER.OF.PERSONS.INJURED > 0, "Yes", "No")) %>% 
-  #mutate(Killed = ifelse(NUMBER.OF.PERSONS.KILLED > 0, "Yes", "No")) %>% 
-  #select(-c(NUMBER.OF.PERSONS.INJURED, NUMBER.OF.PERSONS.KILLED))
+  drop_na(CONTRIBUTING.FACTOR.VEHICLE.1, NUMBER.OF.PERSONS.INJURED, NUMBER.OF.PERSONS.KILLED) 
 
 #categorize
 clean2 <- clean1
-index <- clean2[1]
 
+index <- clean1[1]
 for (i in 1:dim(index)) {
   if (index[i,] %in% Driver_Factors == TRUE) {
     index[i,] <- "driver" 
@@ -75,38 +72,63 @@ for (i in 1:dim(index)) {
   } else if (index[i,] %in% Vehicle_Factors == TRUE) {
     index[i,] <- "vehicle"
   } else {}
+  print(i)
 }
 
+#Clean 2 uses Killed and Injured with their counts
 clean2 <- clean1 %>% 
-  mutate(index) %>% 
-  select(CONTRIBUTING.FACTOR.VEHICLE.1, NUMBER.OF.PERSONS.INJURED, NUMBER.OF.PERSONS.KILLED)
+  mutate(index, Combined = NUMBER.OF.PERSONS.INJURED + NUMBER.OF.PERSONS.KILLED) %>% 
+  select(CONTRIBUTING.FACTOR.VEHICLE.1, NUMBER.OF.PERSONS.INJURED, NUMBER.OF.PERSONS.KILLED, Combined)
 
-ggplot(clean2, aes(NUMBER.OF.PERSONS.INJURED)) + geom_bar(aes(fill = CONTRIBUTING.FACTOR.VEHICLE.1))
+write_csv(clean2, "clean(numeric).csv")
 
+
+
+#Histograms
+ggplot(clean2, aes(NUMBER.OF.PERSONS.INJURED)) + geom_histogram(aes(fill = CONTRIBUTING.FACTOR.VEHICLE.1), binwidth = 1) + scale_x_continuous(name = "Number of Persons Injured") + ggtitle("Total Number of Persons Injured") + ylab("Count") + labs(fill = "Contributing Factor")
+ggplot(clean2, aes(NUMBER.OF.PERSONS.INJURED)) + geom_histogram(aes(fill = CONTRIBUTING.FACTOR.VEHICLE.1), binwidth = 1, na.rm = TRUE, position = "fill") + scale_x_continuous(name = "Number of Persons Injured") + ggtitle("Total Number of Persons Injured") + ylab("Count") + labs(fill = "Contributing Factor")
+
+ggplot(clean2, aes(NUMBER.OF.PERSONS.KILLED)) + geom_histogram(aes(fill = CONTRIBUTING.FACTOR.VEHICLE.1), binwidth = 1) + scale_x_continuous(name = "Number of Persons Killed", breaks = c(0,1,2,3,4,5,6,7,8)) + ggtitle("Total Number of Persons Killed") + ylab("Count") + labs(fill = "Contributing Factor")
+ggplot(clean2, aes(NUMBER.OF.PERSONS.KILLED)) + geom_histogram(aes(fill = CONTRIBUTING.FACTOR.VEHICLE.1), binwidth = 1, na.rm = TRUE, position = "fill") + scale_x_continuous(name = "Number of Persons Killed", breaks = c(0,1,2,3,4,5,6,7,8)) + ggtitle("Total Number of Persons Killed") + ylab("Count") + labs(fill = "Contributing Factor")
+
+ggplot(clean2, aes(Combined)) + geom_histogram(aes(fill = CONTRIBUTING.FACTOR.VEHICLE.1), binwidth = 1) + scale_x_continuous(name = "Number of Persons Hurt") + ggtitle("Total Number of Persons Hurt") + ylab("Count") + labs(fill = "Contributing Factor")
+ggplot(clean2, aes(Combined)) + geom_histogram(aes(fill = CONTRIBUTING.FACTOR.VEHICLE.1), binwidth = 1, na.rm = TRUE, position = "fill") + scale_x_continuous(name = "Number of Persons Hurt") + ggtitle("Total Number of Persons Hurt") + ylab("Count") + labs(fill = "Contributing Factor")
+
+#Contingency Tables for Clean 2
+Combined_Table_Numerical <- table(clean2$Combined, clean2$CONTRIBUTING.FACTOR.VEHICLE.1)
+Combined_Table_Numerical_Margins <- addmargins(A = Combined_Table_Numerical, FUN = list(total = sum), quiet = TRUE)
+Killed_Table_Numerical <- table(clean2$NUMBER.OF.PERSONS.KILLED, clean2$CONTRIBUTING.FACTOR.VEHICLE.1)
+Killed_Table_Numerical_Margins <- addmargins(A = Killed_Table_Numerical, FUN = list(total = sum), quiet = TRUE)
+Injured_Table_Numerical <- table(clean2$NUMBER.OF.PERSONS.INJURED, clean2$CONTRIBUTING.FACTOR.VEHICLE.1)
+Injured_Table_Numerical_Margins <- addmargins(A = Injured_Table_Numerical, FUN = list(total = sum), quiet = TRUE)
+
+#Clean 3 is Injured and Killed as Categorical variables
 clean3 <- read.csv("clean.csv") %>% 
   drop_na(Injured, Killed) %>% 
-  select(-X) %>% 
-  mutate(result = ifelse(Injured == "No" & Killed == "No", "No one hurt", "Someone Hurt"))
+  select(CONTRIBUTING.FACTOR.VEHICLE.1, Injured, Killed) %>% 
+  mutate(Hurt_Status = ifelse(Injured == "No" & Killed == "No", "No one hurt", "Someone Hurt"))
 
-ggplot(clean3, aes(CONTRIBUTING.FACTOR.VEHICLE.1)) + geom_bar(aes(fill = result ))
-ggplot(clean3, aes(CONTRIBUTING.FACTOR.VEHICLE.1)) + geom_bar(aes(fill = result ), position = "fill")
+#Bar Graph
+ggplot(clean3, aes(CONTRIBUTING.FACTOR.VEHICLE.1)) + geom_bar(aes(fill = result))
+ggplot(clean3, aes(CONTRIBUTING.FACTOR.VEHICLE.1)) + geom_bar(aes(fill = result), position = "fill") #Normalized
 
-Combined_Table <- clean3 %>% 
-  group_by(CONTRIBUTING.FACTOR.VEHICLE.1, Injured, Killed) %>% 
-  summarise(Count = n())
+ggplot(clean3, aes(CONTRIBUTING.FACTOR.VEHICLE.1)) + 
+  geom_bar(aes(y = (..count..)/sum(..count..))) + 
+  scale_y_continuous(labels=scales::percent) +
+  ylab("relative frequencies") 
 
-Killed_Table <- clean3 %>% 
-  select(CONTRIBUTING.FACTOR.VEHICLE.1, Killed) %>% 
-  group_by(CONTRIBUTING.FACTOR.VEHICLE.1, Killed) %>% 
-  summarize(Count = n()) %>% 
-  spread(Killed, Count)
+# Contingency Tables for Clean3
+Combined_Table <- table(clean3$Hurt_Status, clean3$CONTRIBUTING.FACTOR.VEHICLE.1)
+Combined_Table_Margins <- addmargins(A = Combined_Table, FUN = list(total = sum), quiet = TRUE)
+Combined_Table_Prop <- round(prop.table(Combined_Table_Margins, margin = 2)*200, 1)
 
-Injured_Table <- clean3 %>% 
-  select(CONTRIBUTING.FACTOR.VEHICLE.1, Injured) %>% 
-  group_by(CONTRIBUTING.FACTOR.VEHICLE.1, Injured) %>% 
-  summarize(Count = n()) %>% 
-  spread(Injured, Count)
+Killed_Table <- table(clean3$Killed, clean3$CONTRIBUTING.FACTOR.VEHICLE.1)
+Killed_Table_Margins <- addmargins(A = Killed_Table, FUN = list(total = sum), quiet = TRUE)
+Killed_Table_Propround(prop.table(Killed_Table_Margins, margin = 2)*200, 1)
+
+Injured_Table <- table(clean3$Injured, clean3$CONTRIBUTING.FACTOR.VEHICLE.1)
+Injured_Table_Margins <- addmargins(A = Injured_Table, FUN = list(total = sum), quiet = TRUE)
+Injured_Table_Prop <- round(prop.table(Injured_Table_Margins, margin = 2)*200, 1)
 
 #library(usethis)
 #use_git_config(user.name = "c-deras", user.email = "coderasr@gmail.com")
-
