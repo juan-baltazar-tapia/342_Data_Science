@@ -55,57 +55,56 @@ clean$CONTRIBUTING.FACTOR.VEHICLE.3[clean$CONTRIBUTING.FACTOR.VEHICLE.3 == 1] <-
 clean$CONTRIBUTING.FACTOR.VEHICLE.4[clean$CONTRIBUTING.FACTOR.VEHICLE.4 == 1] <- NA
 clean$CONTRIBUTING.FACTOR.VEHICLE.5[clean$CONTRIBUTING.FACTOR.VEHICLE.5 == 1] <- NA
 
-#select variables of interests and convert
-clean <- clean %>% 
-  select(NUMBER.OF.PERSONS.INJURED, NUMBER.OF.PERSONS.KILLED, CONTRIBUTING.FACTOR.VEHICLE.1, CONTRIBUTING.FACTOR.VEHICLE.2,
-         CONTRIBUTING.FACTOR.VEHICLE.3, CONTRIBUTING.FACTOR.VEHICLE.4, CONTRIBUTING.FACTOR.VEHICLE.5) %>% 
-  drop_na(CONTRIBUTING.FACTOR.VEHICLE.1) %>% 
-  mutate(Injured = ifelse(NUMBER.OF.PERSONS.INJURED > 0, "Yes", "No")) %>% 
-  mutate(Killed = ifelse(NUMBER.OF.PERSONS.KILLED > 0, "Yes", "No")) %>% 
-  select(-c(NUMBER.OF.PERSONS.INJURED, NUMBER.OF.PERSONS.KILLED))
+#select variables of interests and convert target variable to categorical
+clean1 <- clean %>% 
+  select(CONTRIBUTING.FACTOR.VEHICLE.1, CONTRIBUTING.FACTOR.VEHICLE.2, CONTRIBUTING.FACTOR.VEHICLE.3, 
+         CONTRIBUTING.FACTOR.VEHICLE.4, CONTRIBUTING.FACTOR.VEHICLE.5, NUMBER.OF.PERSONS.INJURED, NUMBER.OF.PERSONS.KILLED) %>% 
+  drop_na(CONTRIBUTING.FACTOR.VEHICLE.1, NUMBER.OF.PERSONS.INJURED, NUMBER.OF.PERSONS.KILLED) 
 
 #categorize
-clean2 <- clean
-View(table(clean2$CONTRIBUTING.FACTOR.VEHICLE.1))
 
-for (i in 1:dim(clean2[1])) {
-  if (clean2$CONTRIBUTING.FACTOR.VEHICLE.1[i] %in% Driver_Factors == TRUE) {
-    clean2$CONTRIBUTING.FACTOR.VEHICLE.1[i] <-  "driver" 
-  } else if (clean2$CONTRIBUTING.FACTOR.VEHICLE.1[i] %in% Environmental_Factors == TRUE) {
-    clean2$CONTRIBUTING.FACTOR.VEHICLE.1[i] <- "environmental"
-  } else if (clean2$CONTRIBUTING.FACTOR.VEHICLE.1[i] %in% Road_Factors == TRUE) {
-    clean2$CONTRIBUTING.FACTOR.VEHICLE.1[i] <- "road"
-  }else if (clean2$CONTRIBUTING.FACTOR.VEHICLE.1[i] %in% Tech_Factors == TRUE) {
-    clean2$CONTRIBUTING.FACTOR.VEHICLE.1[i] <- "tech"
-  } else if (clean2$CONTRIBUTING.FACTOR.VEHICLE.1[i] %in% Vehicle_Factors == TRUE) {
-    clean2$CONTRIBUTING.FACTOR.VEHICLE.1[i] <- "vehicle"
-  } else {
-  }
-}
 
-clean2[1] <- index
-# gets rid of NA values form Injured and Killed
-clean1 <- read.csv("clean.csv") %>% drop_na(Injured,Killed)
+ggplot(clean2, aes(NUMBER.OF.PERSONS.KILLED)) + geom_histogram(aes(fill = CONTRIBUTING.FACTOR.VEHICLE.1), binwidth = 1) + scale_x_continuous(name = "Number of Persons Killed", breaks = c(0,1,2,3,4,5,6,7,8)) + ggtitle("Total Number of Persons Killed") + ylab("Count") + labs(fill = "Contributing Factor")
+ggplot(clean2, aes(NUMBER.OF.PERSONS.KILLED)) + geom_histogram(aes(fill = CONTRIBUTING.FACTOR.VEHICLE.1), binwidth = 1, na.rm = TRUE, position = "fill") + scale_x_continuous(name = "Number of Persons Killed", breaks = c(0,1,2,3,4,5,6,7,8)) + ggtitle("Total Number of Persons Killed") + ylab("Count") + labs(fill = "Contributing Factor")
 
-# Groups by variable, then shows count of yes, no
-clean2 <- clean1 %>% 
-  group_by(CONTRIBUTING.FACTOR.VEHICLE.1, Injured, Killed) %>% 
-  summarise(count = n()) #%>% 
-  #spread(Injured, count) %>% 
-  #select(-`<NA>`) 
-View(table(clean2))
+ggplot(clean2, aes(Combined)) + geom_histogram(aes(fill = CONTRIBUTING.FACTOR.VEHICLE.1), binwidth = 1) + scale_x_continuous(name = "Number of Persons Hurt") + ggtitle("Total Number of Persons Hurt") + ylab("Count") + labs(fill = "Contributing Factor")
+ggplot(clean2, aes(Combined)) + geom_histogram(aes(fill = CONTRIBUTING.FACTOR.VEHICLE.1), binwidth = 1, na.rm = TRUE, position = "fill") + scale_x_continuous(name = "Number of Persons Hurt") + ggtitle("Total Number of Persons Hurt") + ylab("Count") + labs(fill = "Contributing Factor")
 
-# QUESTIONS
-# 
-# 1. Create (1) an overlaid histogram of each numeric variable where the categorical target variable is the overlay, and 
-# (2) a normalized version of the histogram.  
-# Discuss any trends in the numeric variable iteself as well as trends in the target variable as the numeric variable increases.
-# 
-# 2. Create (1) an overlaid bar chart of each categoric variable.  
-# For each non-target variable, make the bar chart have an overlay of the categorical target variable.  
-# Also create (2) a normalized version of the bar chart, if an overlay was used.  Discuss any trends in the target variable itself,
-# in each other categorical variable, and trends in the target variable as the categorical variables change.
-rm(h.Driver_Factors,h.Road_Factors,h.Tech_Factors,h.Vehicle_Factors)
-#use the save.image function to save all these data to a working directory on our computer:
-save.image("/Users/mrfxde/342_Data_Science/data.RData")
+#Contingency Tables for Clean 2
+Combined_Table_Numerical <- table(clean2$Combined, clean2$CONTRIBUTING.FACTOR.VEHICLE.1)
+Combined_Table_Numerical_Margins <- addmargins(A = Combined_Table_Numerical, FUN = list(total = sum), quiet = TRUE)
+Killed_Table_Numerical <- table(clean2$NUMBER.OF.PERSONS.KILLED, clean2$CONTRIBUTING.FACTOR.VEHICLE.1)
+Killed_Table_Numerical_Margins <- addmargins(A = Killed_Table_Numerical, FUN = list(total = sum), quiet = TRUE)
+Injured_Table_Numerical <- table(clean2$NUMBER.OF.PERSONS.INJURED, clean2$CONTRIBUTING.FACTOR.VEHICLE.1)
+Injured_Table_Numerical_Margins <- addmargins(A = Injured_Table_Numerical, FUN = list(total = sum), quiet = TRUE)
 
+#Clean 3 is Injured and Killed as Categorical variables
+clean3 <- read.csv("clean.csv") %>% 
+  drop_na(Injured, Killed) %>% 
+  select(CONTRIBUTING.FACTOR.VEHICLE.1, Injured, Killed) %>% 
+  mutate(Hurt_Status = ifelse(Injured == "No" & Killed == "No", "No one hurt", "Someone Hurt"))
+
+#Bar Graph
+ggplot(clean3, aes(CONTRIBUTING.FACTOR.VEHICLE.1)) + geom_bar(aes(fill = result))
+ggplot(clean3, aes(CONTRIBUTING.FACTOR.VEHICLE.1)) + geom_bar(aes(fill = result), position = "fill") #Normalized
+
+ggplot(clean3, aes(CONTRIBUTING.FACTOR.VEHICLE.1)) + 
+  geom_bar(aes(y = (..count..)/sum(..count..))) + 
+  scale_y_continuous(labels=scales::percent) +
+  ylab("relative frequencies") 
+
+# Contingency Tables for Clean3
+Combined_Table <- table(clean3$Hurt_Status, clean3$CONTRIBUTING.FACTOR.VEHICLE.1)
+Combined_Table_Margins <- addmargins(A = Combined_Table, FUN = list(total = sum), quiet = TRUE)
+Combined_Table_Prop <- round(prop.table(Combined_Table_Margins, margin = 2)*200, 1)
+
+Killed_Table <- table(clean3$Killed, clean3$CONTRIBUTING.FACTOR.VEHICLE.1)
+Killed_Table_Margins <- addmargins(A = Killed_Table, FUN = list(total = sum), quiet = TRUE)
+Killed_Table_Propround(prop.table(Killed_Table_Margins, margin = 2)*200, 1)
+
+Injured_Table <- table(clean3$Injured, clean3$CONTRIBUTING.FACTOR.VEHICLE.1)
+Injured_Table_Margins <- addmargins(A = Injured_Table, FUN = list(total = sum), quiet = TRUE)
+Injured_Table_Prop <- round(prop.table(Injured_Table_Margins, margin = 2)*200, 1)
+
+#library(usethis)
+#use_git_config(user.name = "c-deras", user.email = "coderasr@gmail.com")
