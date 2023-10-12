@@ -2,22 +2,41 @@ install.packages("caret")
 library(caret)
 
 #setting the seed
-set.seed()
+set.seed(123)
 
 #Partitioning the data
-part01 <- 
+part01 <- createDataPartition(y = clean3$CONTRIBUTING.FACTOR.VEHICLE.1, p = .75, list = FALSE)
+
+d <- clean3
 
 d.train <- d[ part01, ] 
 d.test <- d[ -part01, ]
-
-# Validate the partition
 dim(d)
+dim(d.train)
+dim(d.test)
+# Validate the partition
+# Categorical, you need a table where Rows are Train and Test
+names(d.train)
+d.train$trainortest <-
+  rep("train", nrow(d.train))
+head(d.train)
+names(d.train)
 
-t.test(x = )
-t.test
+names(d.test)
+d.test$trainortest <-
+  rep("test", nrow(d.test))
+head(d.test)
 
-# three different variables
-if p value < 0.05 or 0.10 (which ever is chosen)
-chi-square, p value should be close to 100% or 1.00
+d.all <- rbind(d.train, d.test)
+head(d.all)
 
+# For Chi-Sq test!
+# 
+# Variable: response
+d.all$Hurt_Status
+d.all$trainortest
+
+t1 <- table(d.all$trainortest, d.all$Hurt_Status)
+chisq.test(t1, correct = F)$p.value 
+#0.62568
 
