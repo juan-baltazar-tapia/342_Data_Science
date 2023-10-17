@@ -2,7 +2,7 @@ View(clean4)
 clean4 <- clean
 #converts chr dates into POSIXct format
 clean4$DATE <- as.POSIXct(clean4$CRASH.DATE, format = "%m/%d/%Y")
-clean4_smaller <- head(clean4, 4000)
+clean4_smaller <- head(clean4, 2000000)
 
 ########################################
 # Finding the indices of dates < 2020. #
@@ -11,7 +11,7 @@ clean4_smaller <- head(clean4, 4000)
 dates <- as.Date(clean4_smaller$CRASH.DATE, format = "%m/%d/%Y")
 
 # Define the threshold year (e.g., 2022)
-threshold_year <- 2020
+threshold_year <- 2023
 
 # Find indices where year is less than the threshold
 indices <- which(as.POSIXlt(dates)$year + 1900 < threshold_year)
@@ -23,9 +23,10 @@ clean4_smaller <- clean4_smaller[-c(indices), ]
 
 ggplot(clean4_smaller, aes(x = DATE, y = NUMBER.OF.PERSONS.INJURED)) +
   geom_point() +
-  xlab("X") +
-  ylab("Y") +
-  ggtitle("Title") + geom_smooth()
+  xlab("Year") +
+  ylab("Number of People Injured") +
+  ggtitle("Scatterplot of Number of People Injured") + geom_smooth()
 
-
+# Make df with contributing factors, month, borough
+clean5 <- select(clean, CONTRIBUT)
 
