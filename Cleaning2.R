@@ -191,4 +191,5 @@ ggplot(d.table4, aes(Var2, Freq, fill = Var1)) + geom_col() +
        title = " ") +
   theme_classic()
 
-#save.image(file = "data2.RData")
+save.image(file = "data2.RData")
+
