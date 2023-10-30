@@ -1,8 +1,6 @@
 library(tidyverse)
 library(rpart); library(rpart.plot)
 
-clen <- read.csv("clean4cart.csv") %>% select(-X)
-
 cleann <- clean %>% 
   select(CRASH.DATE, CRASH.TIME, BOROUGH, CONTRIBUTING.FACTOR.VEHICLE.1, NUMBER.OF.PERSONS.INJURED, NUMBER.OF.PERSONS.KILLED) %>% 
   drop_na() %>% 
@@ -28,7 +26,7 @@ cleann <- clean %>%
 #morning 6 - 11
 #afternoon 12 - 16
 #evening 17 - 21
-#night 22 - 5 am
+#night 22 - 5 
 
 install.packages("caret")
 library(caret)
@@ -58,5 +56,6 @@ d2$contributing <- as.factor(d2$contributing)
 d2$Hurt.Status <- as.factor(d2$Hurt.Status)
 
 cart01 <- rpart(formula = Hurt.Status ~ Quarter + Time + BOROUGH + contributing, 
-                data = d2, method = "class")
+                data = d2, method = "class", cp = .0001)
 
+rpart.plot(cart01, type = 5, extra = 108, cex = 0.7)
