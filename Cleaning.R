@@ -1,10 +1,9 @@
-library(tidyverse)
-library(dplyr)
-library(tidyr)
-library(hash)
-# Load workspace back to RStudio
-load("/Users/mrfxde/342_Data_Science/data.RData")
+# This is the original cleaning file used for the original EDA
+# Cleaning 1
 
+library(tidyverse)
+library(ggplot)
+load(file = "/Users/mrfxde/342_Data_Science/data2.RData")
 #school computer
 setwd("C:/Users/derasrodriguezc/OneDrive - Eastern Connecticut State University/23-24/Fall/MAT 342")
 
@@ -21,12 +20,14 @@ Driver_Factors <- c(
   "Physical Disability","Reaction to Uninvolved Vehicle", "Reaction to Other Uninvolved Vehicle", 
   "Pedestrian/Bicyclist/Other Pedestrian Error/Confusion", "Eating or Drinking", "Illness"
   )
+# driver 
+
 
 Vehicle_Factors <- c(
   "Accelerator Defective", "Brakes Defective", "Driverless/Runaway Vehicle", "Headlights Defective", "Other Lighting Defects", 
   "Other Vehicular", "Oversized Vehicle", "Steering Failure", "Tire Failure/Inadequate", "Tow Hitch Defective", "Vehicle Vandalism",
   "Windshield Inadequate", "Tinted Windows")
-  
+ # vehicle 
 Environmental_Factors <- c(
   "Animals Action", "Glare", "Obstruction/Debris", "Pavement Defective", "Pavement Slippery","View Obstructed/Limited", "Traffic Control", 
   "Device Improper/Non-Working", "Shoulders Defective/Improper", "Outside Car Distraction", "Traffic Control Device Improper/Non-Working")
