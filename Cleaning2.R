@@ -1,3 +1,7 @@
+# This subsets our data into a smaller dataset of around 200k observations
+# by only looking at data after 2021, and we included three more variables:
+# Borough, Time of Day, and, Time of Year
+# This code also includes the code for the graphs
 library(ggplot2)
 library(dbplyr)
 library(tidyverse)
@@ -5,28 +9,28 @@ load(file = "/Users/mrfxde/342_Data_Science/data2.RData")
 clean4 <- clean
 #converts chr dates into POSIXct format
 clean4$DATE <- as.POSIXct(clean4$CRASH.DATE, format = "%m/%d/%Y")
-#clean4_smaller <- head(clean4, 100000)
+clean4_smaller <- head(clean4, 100000)
 
 ########################################
 # Finding the indices of dates < 2021. #
 ########################################
 # Convert character dates to Date objects
-dates <- as.Date(clean4$CRASH.DATE, format = "%m/%d/%Y")
+dates <- as.Date(clean4_smaller$CRASH.DATE, format = "%m/%d/%Y")
 
 # Define the threshold year (e.g., 2022)
 threshold_year <- 2021
 
 # Find indices where year is less than the threshold
 indices <- which(as.POSIXlt(dates)$year + 1900 < threshold_year)
-
+length(indices)
 # Remove rows #2,023,338
-clean4<- clean4[-c(indices), ]
+clean4_smaller <- clean4_smaller[-c(indices), ]
 # 278,523 after
 
-plot <- ggplot(clean5, aes(x = DATE, y = NUMBER.OF.PERSONS.INJURED)) +
+plot <- ggplot(clean4_smaller, aes(x = DATE, y = NUMBER.OF.PERSONS.INJURED)) +
   geom_point() +
   xlab("Year") +
-  ylab("Number of People Injured") +
+  ylab("Amount") +
   ggtitle("Scatterplot of Number of People Injured")
 plot
 # Make df with contributing factors, month, borough
@@ -124,8 +128,8 @@ ggplot(clean_final, aes(x = BOROUGH, fill = HURT.STATUS)) +
 
 #proportional table
 ggplot(d.table1, aes(Var2, Freq, fill = Var1)) + geom_col() +
-  labs(y = "Proportion", fill = "Hurt Status", 
-       title = " ") +
+  labs(x = "Borough", y = "Proportion", fill = "Hurt Status", 
+       title = "Proportion of Hurt Status by Borough") +
   theme_classic()
 
 # Quarter VS HURT STATUS
@@ -145,8 +149,8 @@ ggplot(clean_final, aes(x = Quarter, fill = HURT.STATUS)) +
 
 #proportional table
 ggplot(d.table2, aes(Var2, Freq, fill = Var1)) + geom_col() +
-  labs(y = "Proportion", fill = "Hurt Status", 
-       title = " ") +
+  labs(x = "Quarter of the Year", y = "Proportion", fill = "Hurt Status", 
+       title = "Proportion of Hurt Status by Quarter") +
   theme_classic()
 
 # Time_Category VS HURT STATUS
@@ -166,8 +170,8 @@ ggplot(clean_final, aes(x = Time_Category, fill = HURT.STATUS)) +
 
 #proportional table
 ggplot(d.table3, aes(Var2, Freq, fill = Var1)) + geom_col() +
-  labs(y = "Proportion", fill = "Hurt Status", 
-       title = " ") +
+  labs(x = "Time of Day", y = "Proportion", fill = "Hurt Status", 
+       title = "Proportion of Hurt Status by Time of Day") +
   theme_classic()
 
 # Vehicle_Factors VS HURT STATUS
@@ -187,8 +191,8 @@ ggplot(clean_final, aes(x = Vehicle_Factors, fill = HURT.STATUS)) +
 
 #proportional table
 ggplot(d.table4, aes(Var2, Freq, fill = Var1)) + geom_col() +
-  labs(y = "Proportion", fill = "Hurt Status", 
-       title = " ") +
+  labs(x = "Contributing Factor", y = "Proportion", fill = "Hurt Status", 
+       title = "Proportion of Hurt Status by Contributing Factor") +
   theme_classic()
 
 save.image(file = "data2.RData")

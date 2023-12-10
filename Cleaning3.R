@@ -1,3 +1,5 @@
+# I attempted to look at which vactors cause the highest deaths
+# and to see at which time of the day.
 View(table(raw$CONTRIBUTING.FACTOR.VEHICLE.1))
 TestTable <- table(clean$CONTRIBUTING.FACTOR.VEHICLE.1, clean$NUMBER.OF.PEDESTRIANS.KILLED)
 TestTable
