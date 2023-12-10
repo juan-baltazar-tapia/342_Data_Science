@@ -2,6 +2,7 @@
 # Cleaning 1
 
 library(tidyverse)
+library(ggplot)
 load(file = "/Users/mrfxde/342_Data_Science/data2.RData")
 #school computer
 setwd("C:/Users/derasrodriguezc/OneDrive - Eastern Connecticut State University/23-24/Fall/MAT 342")
@@ -10,7 +11,7 @@ setwd("C:/Users/derasrodriguezc/OneDrive - Eastern Connecticut State University/
 setwd("/Users/christianderas/Library/CloudStorage/OneDrive-EasternConnecticutStateUniversity/23-24/Fall/MAT 342")
 
 #data as of 12/31/2022
-raw <- read.csv("Motor_Vehicle_Collisions_-_Crashes.csv")
+raw <- read.csv("/Users/mrfxde/Desktop/Data\ Science/Projects/Motor_Vehicle_Collisions_-_Crashes.csv")
 
 #Factor Categories
 Driver_Factors <- c(
@@ -62,36 +63,7 @@ clean1 <- clean %>%
   drop_na(CONTRIBUTING.FACTOR.VEHICLE.1, NUMBER.OF.PERSONS.INJURED, NUMBER.OF.PERSONS.KILLED) 
 
 #categorize
-clean2 <- clean1
 
-index <- clean1[1]
-for (i in 1:dim(index)) {
-  if (index[i,] %in% Driver_Factors == TRUE) {
-    index[i,] <- "driver" 
-  } else if (index[i,] %in% Environmental_Factors == TRUE) {
-    index[i,] <- "environmental"
-  } else if (index[i,] %in% Road_Factors == TRUE) {
-    index[i,] <- "road"
-  }else if (index[i,] %in% Tech_Factors == TRUE) {
-    index[i,] <- "tech"
-  } else if (index[i,] %in% Vehicle_Factors == TRUE) {
-    index[i,] <- "vehicle"
-  } else {}
-  print(i)
-}
-
-#Clean 2 uses Killed and Injured with their counts
-clean2 <- clean1 %>% 
-  mutate(index, Combined = NUMBER.OF.PERSONS.INJURED + NUMBER.OF.PERSONS.KILLED) %>% 
-  select(CONTRIBUTING.FACTOR.VEHICLE.1, NUMBER.OF.PERSONS.INJURED, NUMBER.OF.PERSONS.KILLED, Combined)
-
-write_csv(clean2, "clean(numeric).csv")
-
-
-
-#Histograms
-ggplot(clean2, aes(NUMBER.OF.PERSONS.INJURED)) + geom_histogram(aes(fill = CONTRIBUTING.FACTOR.VEHICLE.1), binwidth = 1) + scale_x_continuous(name = "Number of Persons Injured") + ggtitle("Total Number of Persons Injured") + ylab("Count") + labs(fill = "Contributing Factor")
-ggplot(clean2, aes(NUMBER.OF.PERSONS.INJURED)) + geom_histogram(aes(fill = CONTRIBUTING.FACTOR.VEHICLE.1), binwidth = 1, na.rm = TRUE, position = "fill") + scale_x_continuous(name = "Number of Persons Injured") + ggtitle("Total Number of Persons Injured") + ylab("Count") + labs(fill = "Contributing Factor")
 
 ggplot(clean2, aes(NUMBER.OF.PERSONS.KILLED)) + geom_histogram(aes(fill = CONTRIBUTING.FACTOR.VEHICLE.1), binwidth = 1) + scale_x_continuous(name = "Number of Persons Killed", breaks = c(0,1,2,3,4,5,6,7,8)) + ggtitle("Total Number of Persons Killed") + ylab("Count") + labs(fill = "Contributing Factor")
 ggplot(clean2, aes(NUMBER.OF.PERSONS.KILLED)) + geom_histogram(aes(fill = CONTRIBUTING.FACTOR.VEHICLE.1), binwidth = 1, na.rm = TRUE, position = "fill") + scale_x_continuous(name = "Number of Persons Killed", breaks = c(0,1,2,3,4,5,6,7,8)) + ggtitle("Total Number of Persons Killed") + ylab("Count") + labs(fill = "Contributing Factor")
